@@ -65,8 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Update the position of the hitArea based on the drag coordinates
-      hitArea.style.left = `${x - 30}px`;
-      hitArea.style.top = `${y - 30}px`;
+      hitArea.style.left = `${x - 70}px`;
+      hitArea.style.top = `${y - 50}px`;
 
       initialX2 = x; // Update initialX2 dynamically
       initialY2 = y; // Update initialY2 dynamically
@@ -123,41 +123,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reusable function for drag detection
     function addDragAndClickDetection(element, onClick) {
-      element.addEventListener("mousedown", function (event) {
-        isDragging = false; // Reset drag state
-        startX = event.clientX; // Record the starting X position
-        startY = event.clientY; // Record the starting Y position
+      let startX,
+        startY,
+        isDragging = false;
+      const dragThreshold = 10; // Adjust this threshold as needed for drag detection
 
-        // Add a mousemove listener to detect dragging
-        const onMouseMove = (moveEvent) => {
-          const deltaX = Math.abs(moveEvent.clientX - startX);
-          const deltaY = Math.abs(moveEvent.clientY - startY);
-
-          // Check if movement exceeds the drag threshold
-          if (deltaX > dragThreshold || deltaY > dragThreshold) {
-            isDragging = true; // Mark as dragging
-            document.removeEventListener("mousemove", onMouseMove); // Remove listener to avoid repeated checks
-          }
-        };
-
-        document.addEventListener("mousemove", onMouseMove);
-
-        // Cleanup listeners on mouseup
-        document.addEventListener("mouseup", function onMouseUp() {
-          document.removeEventListener("mousemove", onMouseMove);
-          document.removeEventListener("mouseup", onMouseUp);
-        });
+      // Add event listeners for both mouse and touch interactions
+      element.addEventListener("mousedown", (event) =>
+        handleStart(event.clientX, event.clientY)
+      );
+      element.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        handleStart(touch.clientX, touch.clientY);
       });
 
-      // Handle click events
-      element.addEventListener("click", function (event) {
-        if (isDragging) {
-          console.log(`${element.className} detected drag`);
-        } else {
+      element.addEventListener("mousemove", (event) =>
+        handleMove(event.clientX, event.clientY)
+      );
+      element.addEventListener("touchmove", (event) => {
+        const touch = event.touches[0];
+        handleMove(touch.clientX, touch.clientY);
+      });
+
+      element.addEventListener("mouseup", handleEnd);
+      element.addEventListener("touchend", handleEnd);
+
+      function handleStart(x, y) {
+        isDragging = false; // Reset drag state
+        startX = x; // Record the starting X position
+        startY = y; // Record the starting Y position
+      }
+
+      function handleMove(x, y) {
+        const deltaX = Math.abs(x - startX);
+        const deltaY = Math.abs(y - startY);
+
+        // Check if movement exceeds the drag threshold
+        if (deltaX > dragThreshold || deltaY > dragThreshold) {
+          isDragging = true; // Mark as dragging
+        }
+      }
+
+      function handleEnd() {
+        if (!isDragging) {
           console.log(`${element.className} detected click`);
           onClick(); // Perform the desired click action
+        } else {
+          console.log(`${element.className} detected drag`);
         }
-      });
+      }
     }
 
     // Define the shared onClick logic
