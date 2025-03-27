@@ -116,6 +116,7 @@ video {
   left: 45px;
   z-index: 55;
   cursor: grab;
+  display: none;
 }
 .dragArea:active {
   cursor: grabbing;
@@ -129,4 +130,5 @@ video {
   left: 0px;
   z-index: 50;
   cursor: pointer;
+  display: none;
 }

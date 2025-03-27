@@ -49,6 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to initialize handleDrag and handlePress
   function initializeHandlers() {
+    // show handle drag and click
+    showInteractiveElements();
     // Handle drag functionality
     p.handleDrag(function (evt, x, y) {
       if (!isDraggingEnabled) {
@@ -140,10 +142,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       );
     }
-
+    // hide handle drag and click
     function hideInteractiveElements() {
       gsap.set(".dragArea, .clickArea", {
         display: "none",
+      });
+    }
+    // show handle drag and click
+    function showInteractiveElements() {
+      gsap.set(".dragArea, .clickArea", {
+        display: "block",
       });
     }
   }
