@@ -446,7 +446,6 @@
   Peel.prototype.removeEvents = function () {
     this.events.forEach(function (e, i) {
       removeEvent(e.el, e.type, e.handler);
-      console.log(removeEvent);
     });
     this.events = [];
   };
@@ -875,7 +874,6 @@
    * @private
    */
   Peel.prototype.getScaledBox = function (scale) {
-    console.log(scale);
     // Box scale is equal to:
     // 1 * the bottom/right scale
     // 0 * the top/left scale.
