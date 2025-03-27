@@ -10,9 +10,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Duration of the animation (in seconds)
   const duration = 1;
 
-  var p = new Peel("#top-left", {
-    corner: Peel.Corners.TOP_LEFT,
-  });
+  let isDragging = false; // Tracks if a drag action is detected
+  let startX = 0; // Initial X position
+  let startY = 0; // Initial Y position
+  const dragThreshold = 5; // Threshold to distinguish between drag and click
+
   const hitArea = document.querySelector(".dragArea");
   const hitArea2 = document.querySelector(".clickArea");
 
@@ -20,6 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
   let isHandlePressTriggered = false; // Prevent handlePress from triggering multiple times
   let initialX2 = targetX; // Initialize variables to store x position
   let initialY2 = targetY; // Initialize variables to store y position
+
+  var p = new Peel("#top-left", {
+    corner: Peel.Corners.TOP_LEFT,
+  });
 
   // GSAP animation intro
   gsap.to(
@@ -103,12 +109,40 @@ document.addEventListener("DOMContentLoaded", function () {
       onClick();
     });
 
-    // Add a click event listener
+    // Listen for mousedown (or touchstart)
+    hitArea2.addEventListener("mousedown", function (event) {
+      isDragging = false; // Reset drag state
+      startX = event.clientX; // Record the starting X position
+      startY = event.clientY; // Record the starting Y position
+
+      // Add a mousemove listener to detect dragging
+      const onMouseMove = (moveEvent) => {
+        const deltaX = Math.abs(moveEvent.clientX - startX);
+        const deltaY = Math.abs(moveEvent.clientY - startY);
+
+        // Check if movement exceeds the drag threshold
+        if (deltaX > dragThreshold || deltaY > dragThreshold) {
+          isDragging = true; // Mark as dragging
+          document.removeEventListener("mousemove", onMouseMove); // Remove listener to avoid repeated checks
+        }
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+
+      // Cleanup listener on mouseup
+      document.addEventListener("mouseup", function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+      });
+    });
+
+    // Listen for click events
     hitArea2.addEventListener("click", function (event) {
-      // Perform an action on click
-      console.log("click");
-      onClick();
-      hideInteractiveElements();
+      if (isDragging) {
+      } else {
+        onClick();
+        hideInteractiveElements();
+      }
     });
 
     function onClick() {
