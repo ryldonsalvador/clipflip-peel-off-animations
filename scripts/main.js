@@ -15,13 +15,14 @@ document.addEventListener("DOMContentLoaded", function () {
   let startY = 0; // Initial Y position
   const dragThreshold = 5; // Threshold to distinguish between drag and click
 
-  const hitArea = document.querySelector(".dragArea");
-  const hitArea2 = document.querySelector(".clickArea");
-
   let isDraggingEnabled = false; // Initially disabled until animation completes
   let isHandlePressTriggered = false; // Prevent handlePress from triggering multiple times
   let initialX2 = targetX; // Initialize variables to store x position
   let initialY2 = targetY; // Initialize variables to store y position
+
+  // Select the hit areas
+  const hitArea = document.querySelector(".dragArea");
+  const hitArea2 = document.querySelector(".clickArea");
 
   var p = new Peel("#top-left", {
     corner: Peel.Corners.TOP_LEFT,
@@ -104,53 +105,70 @@ document.addEventListener("DOMContentLoaded", function () {
     }, hitArea);
 
     // Handle press functionality
-    p.handlePress(function (evt) {
-      console.log("press");
-      onClick();
-    });
+    // p.handlePress(function (evt) {
+    //   console.log("press");
+    //   onClick();
+    // });
+    // Attach drag and click detection to both hit areas
+    // Define onClick handlers for each hit area
+    function onClickHitArea() {
+      console.log("HitArea clicked");
+      onClick(); // Call the shared onClick logic
+    }
 
-    // Listen for mousedown (or touchstart)
-    hitArea2.addEventListener("mousedown", function (event) {
-      isDragging = false; // Reset drag state
-      startX = event.clientX; // Record the starting X position
-      startY = event.clientY; // Record the starting Y position
+    function onClickHitArea2() {
+      console.log("HitArea2 clicked");
+      onClick(); // Call the shared onClick logic
+    }
 
-      // Add a mousemove listener to detect dragging
-      const onMouseMove = (moveEvent) => {
-        const deltaX = Math.abs(moveEvent.clientX - startX);
-        const deltaY = Math.abs(moveEvent.clientY - startY);
+    // Reusable function for drag detection
+    function addDragAndClickDetection(element, onClick) {
+      element.addEventListener("mousedown", function (event) {
+        isDragging = false; // Reset drag state
+        startX = event.clientX; // Record the starting X position
+        startY = event.clientY; // Record the starting Y position
 
-        // Check if movement exceeds the drag threshold
-        if (deltaX > dragThreshold || deltaY > dragThreshold) {
-          isDragging = true; // Mark as dragging
-          document.removeEventListener("mousemove", onMouseMove); // Remove listener to avoid repeated checks
-        }
-      };
+        // Add a mousemove listener to detect dragging
+        const onMouseMove = (moveEvent) => {
+          const deltaX = Math.abs(moveEvent.clientX - startX);
+          const deltaY = Math.abs(moveEvent.clientY - startY);
 
-      document.addEventListener("mousemove", onMouseMove);
+          // Check if movement exceeds the drag threshold
+          if (deltaX > dragThreshold || deltaY > dragThreshold) {
+            isDragging = true; // Mark as dragging
+            document.removeEventListener("mousemove", onMouseMove); // Remove listener to avoid repeated checks
+          }
+        };
 
-      // Cleanup listener on mouseup
-      document.addEventListener("mouseup", function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        document.addEventListener("mousemove", onMouseMove);
+
+        // Cleanup listeners on mouseup
+        document.addEventListener("mouseup", function onMouseUp() {
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+        });
       });
-    });
 
-    // Listen for click events
-    hitArea2.addEventListener("click", function (event) {
-      if (isDragging) {
-      } else {
-        onClick();
-        hideInteractiveElements();
-      }
-    });
+      // Handle click events
+      element.addEventListener("click", function (event) {
+        if (isDragging) {
+          console.log(`${element.className} detected drag`);
+        } else {
+          console.log(`${element.className} detected click`);
+          onClick(); // Perform the desired click action
+        }
+      });
+    }
 
+    // Define the shared onClick logic
     function onClick() {
+      hideInteractiveElements();
       if (isHandlePressTriggered) {
         return; // Exit if handlePress was already triggered
       }
 
       isHandlePressTriggered = true; // Set the flag to true to prevent re-triggering
+
       // Create the GSAP tween dynamically on press to use the updated x and y
       gsap.to(
         { x: initialX2, y: initialY2 }, // Use the latest values of initialX2 and initialY2
@@ -172,10 +190,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 display: "none",
               }
             );
+
+            // Reset the flag after the animation is completed
+            isHandlePressTriggered = false;
           },
         }
       );
     }
+
+    // Attach drag and click detection to both hit areas
+    addDragAndClickDetection(hitArea, onClickHitArea);
+    addDragAndClickDetection(hitArea2, onClickHitArea2);
+
     // hide handle drag and click
     function hideInteractiveElements() {
       gsap.set(".dragArea, .clickArea", {
@@ -184,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // show handle drag and click
     function showInteractiveElements() {
-      gsap.set(".dragArea, .clickArea", {
+      gsap.set(".dragArea , .clickArea", {
         display: "block",
       });
     }
